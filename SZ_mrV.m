@@ -1,5 +1,7 @@
 % Initializing the session and running mrVista 
 
+% Contains all the codes for runnign pRF model
+addpath(genpath('/Volumes/Marouska/pRFallfiles/pRF_Analysis/pRF_code/'))
 
 %% 
 mrInit;
@@ -9,7 +11,7 @@ mrInit;
 
 
 %%
-% Run pRF model for a small ROI on inplane view as a check
+% Open inplane view
 mrVista;
 
 %% 
@@ -45,13 +47,59 @@ rmMain(VOLUME{1},roiFileName,searchType,'matFileName', outFileName,'model',prfMo
 %% 
 % Define stimulus parameters (images.mat and params.mat)
 
+hvol = initHiddenGray;
+hvol = viewSet(hvol, 'curdt','averages');
+hvol = rmLoadParameters(hvol);hvol=refreshScreen(hvol);
 
 roiFileName = [];
 prfModels = {'one gaussian'};
 searchType = 3;
 outFileName = 'SZ_2DGaussian';
-rmMain(VOLUME{1},[],searchType,'matFileName', outFileName,'model',prfModels);
+rmMain(hvol,[],searchType,'matFileName', outFileName,'model',prfModels);
 
+
+%% 
+% Define stimulus parameters (images.mat and params.mat)
+
+hvol = initHiddenGray;
+hvol = viewSet(hvol, 'curdt','averages');
+hvol = rmLoadParameters(hvol);hvol=refreshScreen(hvol);
+
+roiFileName = [];
+prfModels = {'one gaussian'};
+searchType = 5;
+outFileName = 'SZ_2DGaussian_hrf';
+rmMain(hvol,[],searchType,'matFileName', outFileName,'model',prfModels);
+
+%% Loading stimulus parameters initially (only has to be done once)
+
+sub_num_all = [{'312','313','314','315','316'}];
+
+tot_sub = length(sub_num_all);
+
+for idx_sub = 1:tot_sub
+
+sub_num = sub_num_all{idx_sub};
+sub_dir = strcat('/Volumes/Marouska/pRFallfiles/pRF_Analysis/pRF_data/',sub_num,'/');
+
+cd(sub_dir);
+
+hvol = initHiddenGray;
+hvol = viewSet(hvol, 'curdt','averages');
+figpoint = rmEditStimParams(hvol);
+uiwait(figpoint);
+
+
+clearvars hvol figpoint sub_dir sub_num;
+
+end
+
+
+%% Running the model from terminal 
+%./SZ_rmMain.sh /Volumes/Marouska/pRFallfiles/pRF_Analysis/pRF_data/108/ 3 'SZ_2DGaussian'
+% First argument - path to folder where mrSESSION.mat is saved
+% Second argument  - pRF model to run (refer to rmMain.m for the different options)
+% Third argument - output file name 
 
 %%
 % Visualize the 3D cortical surface and draw ROIs - V1, V2, V3, ( rest

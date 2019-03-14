@@ -8,7 +8,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %sub_num_all = [{'103'},{'104'},{'106'},{'107'},{'108'},{'109'},{'110'},{'111'},{'112'},{'114'}];
 %sub_num_all = [{'200'},{'201'},{'202'},{'203'},{'204'},{'205'},{'206'},{'207'},{'208'},{'209'},{'210'},{'211'},{'212'},{'213'},{'214'},{'218'}];
-sub_num_all = [{'300'}];
+sub_num_all = [{'301','302','303','304','305','306','307','309','310','312','313','314','315','316'}];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -43,7 +43,7 @@ main_seg_dir = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',s
 
 orig_anat = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',sub_num,'/mri/orig.mgz');
 orig_seg = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',sub_num,'/mri/ribbon.mgz');
-FS_anat = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',sub_num,'/final_files/n101_t1.nii.gz');
+FS_anat = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',sub_num,'/final_files/n101_t1.nii.gz'); % Here by mistake all segmentations/anatomy are named with prefix n101_..., but they are all different.
 FS_seg = strcat('/Volumes/Marouska/pRFallfiles/freesurfer_segmentation/',sub_num,'/final_files/n101_t1_class.nii.gz');
 fin_seg_dir = strcat(main_seg_dir,'final_files/');
 mkdir(fin_seg_dir);
@@ -56,8 +56,11 @@ mrV_seg_dir = strcat(fin_seg_dir,'mrV_seg_dir');
 
 % Extracting segmentation files from freesurfer directories
 
-setenv( 'FREESURFER_HOME','/Applications/freesurfer');
+%setenv( 'FREESURFER_HOME','/Applications/freesurfer');
 %system('source /Applications/freesurfer/setUpFreeSurfer.sh');
+
+bash_path=getenv ('PATH');
+setenv( 'PATH',[bash_path,':/Applications/freesurfer',':/Applications/freesurfer/bin']);
 system(sprintf('mri_convert --out_orientation RAS  -rt nearest %s %s',orig_anat,FS_anat));
 system(sprintf('mri_convert --out_orientation RAS  -rt nearest %s %s %s',orig_seg,FS_seg));
 
