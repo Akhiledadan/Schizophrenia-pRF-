@@ -13,7 +13,7 @@ function SZ_Sigma_ecc(main_dir,save_results,save_plots,plot_type)
 %% Initializing required variables
 
 % Plot params
-MarkerSize = 6;
+MarkerSize = 3;
 
 % Model thresholds
 Var_Exp_Thr = 0.4;
@@ -34,6 +34,7 @@ end
 % Define the different conditions to be compared
 
 conditions = [{'ptwH+'};{'ptwH-'};{'HC'}];
+
 data_type = 'Averages';
 
 
@@ -65,13 +66,13 @@ for cond_idx = 1:num_cond
     switch cur_cond
         case 'ptwH+'
             % subjects = [{'100'},{'101'},{'102'},{'103'},{'104'},{'106'},{'107'},{'108'},{'109'},{'110'},{'111'},{'112'},{'114'}];
-            subjects = [{'100','100'}];
+            subjects = [{'100'},{'101'},{'102'},{'103'}];
             
         case 'ptwH-'
-            subjects = [{'201','201'}];
+            subjects = [{'200'},{'201'},{'202'},{'204'}];
             
         case 'HC'
-            subjects = [{'300'}];
+            subjects = [{'300'},{'302'},{'303'},{'304'}];
     end
             
     for sub_idx = 1:length(subjects)
@@ -223,6 +224,127 @@ Cond_model = [Cond_model add_t_rois];
 % add_t_1_roi = table(roi_index);
 % ROI_params = [ROI_params add_t_1_roi];
 
+%%
+Analysis = 'subave_Ave';
+% Analysis = 'alltog';
+
+switch Analysis
+    case 'subave_Ave'
+
+for roi_idx = 1:num_roi
+    roi_comp = ROI_params.ROI_choice_all{roi_idx};
+    for cond_idx = 1:num_cond
+        num_sub = Cond_model.number_subjects(1);
+        for sub_idx = 1:num_sub
+            x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc;
+            y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.sigma;               
+            ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp;
+            
+            x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc;
+            y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.sigma;            
+            ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp;
+            
+            x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc;
+            y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.sigma;
+            ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp;
+                
+            % fit
+            % Axis limits for plotting
+            xaxislim = [0 10.21];
+            yaxislim = [0 6];
+            
+            % x range values for fitting
+            xfit_range = [Ecc_Thr_low Ecc_Thr];
+            xfit = linspace(xfit_range(1),xfit_range(2),8)';
+            param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
+            param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
+            param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
+            
+            
+            xfit_all(cond_idx).val(:,sub_idx,roi_idx) = xfit;
+            param_comp_1_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_yfit;
+            param_comp_2_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_yfit;
+            param_comp_3_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_yfit;
+            
+            % Bootstrap the data and bin the x parameter
+            [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);
+            [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
+            [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
+                      
+            param_comp_1_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.y;
+            param_comp_2_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.y;
+            param_comp_3_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.y;
+            
+        end
+    end
+end
+
+for cond_idx = 1:num_cond
+    xfit_all_ave  = mean(xfit_all(cond_idx).val,2);
+    param_comp_1_yfit_all_ave = mean(param_comp_1_yfit_all(cond_idx).val,2);
+    param_comp_2_yfit_all_ave = mean(param_comp_2_yfit_all(cond_idx).val,2);
+    param_comp_3_yfit_all_ave = mean(param_comp_3_yfit_all(cond_idx).val,2); 
+    
+    param_comp_1_b_xfit_all_ave = mean(param_comp_1_b_xfit_all(cond_idx).val,2);
+    param_comp_2_b_xfit_all_ave = mean(param_comp_2_b_xfit_all(cond_idx).val,2);
+    param_comp_3_b_xfit_all_ave = mean(param_comp_3_b_xfit_all(cond_idx).val,2); 
+    
+    param_comp_1_b_data_all_ave = mean(param_comp_1_data_all(cond_idx).val,2);
+    param_comp_2_b_data_all_ave = mean(param_comp_2_data_all(cond_idx).val,2);
+    param_comp_3_b_data_all_ave = mean(param_comp_3_data_all(cond_idx).val,2);
+    
+end
+
+for roi_idx = 1:num_roi
+    for cond_idx = 1:num_cond
+        % Plot the fit line
+        figPoint_fit = figure;
+        plot(xfit_all_ave(:,:,roi_idx),param_comp_1_yfit_all_ave(:,:,roi_idx)','b'); hold on;
+        plot(xfit_all_ave(:,:,roi_idx),param_comp_2_yfit_all_ave(:,:,roi_idx)','g');hold on;
+        plot(xfit_all_ave(:,:,roi_idx),param_comp_3_yfit_all_ave(:,:,roi_idx)','r');
+        
+%         hold on;
+%         plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_upper_all_ave(:,:,roi_idx),'b--');
+%         plot(param_comp_1_b_xfit,param_comp_1_b_lower,'b--');
+%         
+%         plot(param_comp_2_b_xfit,param_comp_2_b_upper,'g--');
+%         plot(param_comp_2_b_xfit,param_comp_2_b_lower,'g--');
+%         
+%         plot(param_comp_3_b_xfit,param_comp_3_b_upper,'r--');
+%         plot(param_comp_3_b_xfit,param_comp_3_b_lower,'r--')
+        
+        hold on;        
+        plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx)','b--'); hold on;
+        plot(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx)','g--');hold on;
+        plot(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx)','r--');
+        
+        
+        
+        
+%         errorbar(param_comp_1_data.x,param_comp_1_data.y,param_comp_1_data.ysterr,'bo','MarkerFaceColor','b','MarkerSize',MarkerSize);
+%         errorbar(param_comp_2_data.x,param_comp_2_data.y,param_comp_2_data.ysterr,'go','MarkerFaceColor','g','MarkerSize',MarkerSize);
+%         errorbar(param_comp_2_data.x,param_comp_3_data.y,param_comp_3_data.ysterr,'ro','MarkerFaceColor','r','MarkerSize',MarkerSize);
+%         
+%         titleall = sprintf('%s', roi_comp) ;
+%         title(titleall);
+%         legend([{data_comp_1},{data_comp_2},{data_comp_3}]);
+%         ylim(yaxislim);
+%         xlim(xaxislim);
+        
+        hold off;
+        
+        
+        
+    end
+end
+
+
+
+
+
+
+
+    case 'alltog'
 
 %% Plots
 % Plot raw data and the fits 
@@ -327,7 +449,7 @@ for roi_idx = 1:num_roi
    
     fprintf('\n Plotting raw data for roi %d \n',roi_idx);
     
-    figPoint_raw = figure(1); 
+    figPoint_raw = figure; 
     plot(x_param_comp_1,y_param_comp_1,'b*');
     hold on; plot(x_param_comp_2,y_param_comp_2,'g*');
     hold on; plot(x_param_comp_3,y_param_comp_3,'r*');
@@ -357,7 +479,7 @@ for roi_idx = 1:num_roi
     
     
     % Plot the fit line 
-    figPoint_fit = figure(2);
+    figPoint_fit = figure;
     plot(xfit,param_comp_1_yfit','b'); hold on;
     plot(xfit,param_comp_2_yfit','g');hold on;
     plot(xfit,param_comp_3_yfit','r');
@@ -369,7 +491,12 @@ for roi_idx = 1:num_roi
     [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
     [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
          
-     
+%     % Plot the fit line 
+%     figPoint_fit = figure;
+%     plot(param_comp_1_b_xfit,param_comp_1_data.y,'b'); hold on;
+%     plot(param_comp_2_b_xfit,param_comp_2_data.y,'g');hold on;
+%     plot(param_comp_3_b_xfit,param_comp_3_data.y,'r');
+    
     hold on;
     plot(param_comp_1_b_xfit,param_comp_1_b_upper,'b--');
     plot(param_comp_1_b_xfit,param_comp_1_b_lower,'b--');
@@ -481,30 +608,30 @@ for roi_idx = 1:num_roi
     
 end
 
-close all;
-fprintf('Plotting the difference in central values');
-
-% Scrambled - Natural
-figPoint_cen_diff = figure(31);
-h = bar(param_comp_diff_data_cen_allroi_bin,'FaceColor',[0 0 1]);hold on;
-errorbar([1:num_roi]',param_comp_diff_data_cen_allroi_bin,param_comp_diff_data_cen_allroi_bin-param_comp_diff_data_cen_allroi_lo,param_comp_diff_data_cen_allroi_up-param_comp_diff_data_cen_allroi_bin,'k','LineStyle','none');
-%xlim([0 3]);
-ylim([-0.25 0.5]);
-titleall = sprintf('Central value difference') ;
-title(titleall);
-set(h.Parent,'XTickLabel',ROI_choice_all);
-hold off;
-
-
-% Scrambled - Natural
-figPoint_auc_diff = figure(41);
-h = bar(param_comp_diff_data_auc_allroi,'FaceColor',[0 0 1]);
-%xlim([0 3]);
-ylim([-0.2 0.5]);
-titleall = sprintf('AUC difference') ;
-title(titleall);
-hold off;
-set(h.Parent,'XTickLabel',ROI_choice_all);
+% close all;
+% fprintf('Plotting the difference in central values');
+% 
+% % Scrambled - Natural
+% figPoint_cen_diff = figure(31);
+% h = bar(param_comp_diff_data_cen_allroi_bin,'FaceColor',[0 0 1]);hold on;
+% errorbar([1:num_roi]',param_comp_diff_data_cen_allroi_bin,param_comp_diff_data_cen_allroi_bin-param_comp_diff_data_cen_allroi_lo,param_comp_diff_data_cen_allroi_up-param_comp_diff_data_cen_allroi_bin,'k','LineStyle','none');
+% %xlim([0 3]);
+% ylim([-0.25 0.5]);
+% titleall = sprintf('Central value difference') ;
+% title(titleall);
+% set(h.Parent,'XTickLabel',ROI_choice_all);
+% hold off;
+% 
+% 
+% % Scrambled - Natural
+% figPoint_auc_diff = figure(41);
+% h = bar(param_comp_diff_data_auc_allroi,'FaceColor',[0 0 1]);
+% %xlim([0 3]);
+% ylim([-0.2 0.5]);
+% titleall = sprintf('AUC difference') ;
+% title(titleall);
+% hold off;
+% set(h.Parent,'XTickLabel',ROI_choice_all);
 
 if save_plots == 1
     filename_cen_diff = strcat(save_dir, '/', 'plot','cen_diff', '.png');
@@ -521,12 +648,10 @@ if save_results == 1
     
 end
 
-close all;
+%close all;
 end
 
-
-   
-
+end
 
 
 

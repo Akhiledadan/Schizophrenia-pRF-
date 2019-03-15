@@ -73,7 +73,7 @@ rmMain(hvol,[],searchType,'matFileName', outFileName,'model',prfModels);
 
 %% Loading stimulus parameters initially (only has to be done once)
 
-sub_num_all = [{'312','313','314','315','316'}];
+sub_num_all = [{'108'}];
 
 tot_sub = length(sub_num_all);
 
