@@ -1,6 +1,7 @@
-function SZ_mrWang(mrV_subj_folder,vistasoft_path,FS_subj_folder)
+function SZ_mrWang(mrV_subj_folder,FS_subj_folder,code_path)
 
-  addpath(genpath(vistasoft_path));
+  addpath(genpath(code_path.vistasoft_path));
+  addpath(genpath(code_path.Wroi_path));
 
   cd mrV_subj_folder 
 
