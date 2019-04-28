@@ -1,11 +1,10 @@
 function SZ_mrWang(mrV_subj_folder,FS_subj_folder,code_path)
 
   addpath(genpath(code_path.vistasoft_path));
-  addpath(genpath(code_path.Wroi_path));
 
-  cd mrV_subj_folder 
+  cd(mrV_subj_folder) 
 
-  # cd to the mrVista session directory
+  %cd to the mrVista session directory
   vw = initHiddenGray;
 
   wangAtlasPath = sprintf(fullfile(FS_subj_folder, 'mri', 'native.wang2015_atlas.mgz'));
