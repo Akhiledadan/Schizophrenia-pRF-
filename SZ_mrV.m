@@ -73,19 +73,22 @@ rmMain(hvol,[],searchType,'matFileName', outFileName,'model',prfModels);
 
 %% Loading stimulus parameters initially (only has to be done once)
 
-sub_num_all = [{'108'}];
+sub_num_all = [{'307','309','310','312','313','314','315','316'}];
 
 tot_sub = length(sub_num_all);
 
 for idx_sub = 1:tot_sub
 
 sub_num = sub_num_all{idx_sub};
-sub_dir = strcat('/Volumes/Marouska/pRFallfiles/pRF_Analysis/pRF_data/',sub_num,'/');
+sub_dir = strcat('/data/p266162/25042019/mrvista/',sub_num,'/');
 
 cd(sub_dir);
+vANATOMYPATH = strcat(sub_dir,'/Anatomy/n101_t1.nii.gz');
+mrSessPath = fullfile(sub_dir, 'mrSESSION.mat');
+save(mrSessPath, 'vANATOMYPATH', '-append');
 
 hvol = initHiddenGray;
-hvol = viewSet(hvol, 'curdt','averages');
+hvol = viewSet(hvol, 'curdt','Averages');
 figpoint = rmEditStimParams(hvol);
 uiwait(figpoint);
 

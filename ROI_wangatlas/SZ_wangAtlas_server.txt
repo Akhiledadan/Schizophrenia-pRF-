@@ -5,6 +5,8 @@
 # Load the anaconda module
 module load development/anaconda/3-5.2.0
 
+module load Anaconda3/5.3.0 # for Groningen server
+
 # Check the version
  conda -V
 
@@ -16,6 +18,28 @@ source activate neuropythy
 
 # Install the neuropythy library using pip
 pip install neuropythy
+
+# Creates wang et al labels and benson templates from freesurfer directory
+# and converts left and right labels in surface space into volume space
+# Contains SZ_wangROI_all.sh 
+# to submit the job to server (both umcg and spinoza)
+# cd to the freesurfer directory containing freesurfer subject folder with the subject name 
+
+. SZ_wangROI_all_main.sh <subject_name>
+
+
+
+# Converts wang et al labels in .mgz into mrVista ROIs
+# requires SZ_mrWang.m  matlab script
+# to submit the job to server (both umcg and spinoza)
+# qsub /data/p266162/pRF_code/Schizophrenia-pRF-/ROI_wangatlas/SZ_mrWang.sh 
+
+. SZ_mrWang.sh
+
+
+What is happening inside the code
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 
 ####################################
@@ -41,6 +65,21 @@ python -m neuropythy surface_to_image -m nearest -l /mnt/storage_2/SZ/Nben_ROI/e
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$
 $ To be run in Matlab
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+module load MATLAB/2018a # for Groningen server
+
+matlab -nodesktop -nosplash 
+
+FS_subj_folder = '/data/p266162/25042019/freesurfer/$1/'; % freesurfer subject folder
+mrV_subj_folder = '/data/p266162/25042019/mrvista/$1/'; 
+
+codepth.vistasoft_path = '/home/p266162/data/pRF_code/vistasoft';
+codepth.Wroi_path = '/home/p266162/data/pRF_code/Schizophrenia-pRF-';
+
+SZ_mrWang(mrV_subj_folder,FS_subj_folder,code_path);
+
+##########################################################################################
+
 
 # cd to the mrVista session directory
 vw = initHiddenGray;
