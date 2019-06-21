@@ -23,8 +23,8 @@ Mean_map_Thr = 80;
 
 % Select the ROIs
 %ROI_choice_all = [{'V1'};{'V2'};{'V3'};{'V3A'};{'V3B'};{'LO1'};{'LO2'}];
-ROI_choice_all = [{'V1'};{'V2'};{'V3'}];
-
+%ROI_choice_all = [{'V1'};{'V2'};{'V3'}];
+ROI_choice_all = [{'WangAtlas_V1v'};{'WangAtlas_V1d'}];
 
 % pRF parameters to be compared
 if ~exist('plot_type','var') || isempty(plot_type)
@@ -66,7 +66,7 @@ for cond_idx = 1:num_cond
     switch cur_cond
         case 'ptwH+'
             % subjects = [{'100'},{'101'},{'102'},{'103'},{'104'},{'106'},{'107'},{'108'},{'109'},{'110'},{'111'},{'112'},{'114'}];
-            subjects = [{'100'},{'101'},{'102'},{'103'}];
+            subjects = [{'100'},{'101'},{'102'},{'103'},{'107'}];
             
         case 'ptwH-'
             subjects = [{'200'},{'201'},{'202'},{'204'}];
