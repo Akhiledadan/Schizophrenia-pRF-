@@ -1,0 +1,96 @@
+####################################
+# Setting up neuropythy library
+####################################
+
+# Load the anaconda module
+module load development/anaconda/3-5.2.0 # For spinoza server 
+
+module load Anaconda3/5.3.0 # For Groningen server
+
+
+
+# Check the version
+ conda -V
+
+#####################################################################
+# Only has to be done once
+#
+# Create a virtual environment
+ conda create -n neuropythy anaconda # Only once
+
+# Install the neuropythy library using pip
+pip install neuropythy
+#####################################################################
+
+# Activate the virtual environment
+source activate neuropythy
+
+####################################
+# Running the code
+####################################
+
+
+###########################
+
+export subjectdir=/home/p266162/data/25042019/freesurfer/
+cd $subjectdir
+. /home/p266162/data/pRF_code/Schizophrenia-pRF-/ROI_wangatlas/SZ_wangROI_all_main.sh $subjectdir
+
+# Above one line runs the following two commands (so, only have to run the above commands)
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+# Run the code to generate benson templates
+python -m neuropythy atlas --verbose <subjid>/    #<subjid> is the subject fodler name containing the freesurfer files
+
+
+####################################
+# converting Wang et al labels to mrVista compatible labels
+####################################
+
+
+# Convert the left and right surface ROI files to volume files
+python -m neuropythy surface_to_image -m nearest -l /mnt/storage_2/SZ/Nben_ROI/example_subject/bert/surf/lh.wang15_mplbl.mgz -r /mnt/storage_2/SZ/Nben_ROI/example_subject/bert/surf/rh.wang15_mplbl.mgz bert /mnt/storage_2/SZ/Nben_ROI/example_subject/bert/mri/native.wang2015_atlas.mgz
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+##########################
+
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$ To be run in Matlab
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+module load MATLAB/2018a # for Groningen server
+
+matlab -nodesktop nosplash 
+
+FS_subj_folder = '/data/p266162/25042019/freesurfer/100/'; % freesurfer subject folder
+mrV_subj_folder = '/data/p266162/25042019/mrvista/100/'; 
+
+codepth.vistasoft_path = '/home/p266162/data/pRF_code/vistasoft';
+codepth.Wroi_path = '/home/p266162/data/pRF_code/Schizophrenia-pRF-';
+
+SZ_mrWang(mrV_subj_folder,FS_subj_folder,code_path);
+
+
+
+####################################
+# Exporting Wang et al labels to freesurfer labels 
+####################################
+
+# Load freesurfer module 
+module load freesurfer
+
+export roiname_array=(1 "V1v" "V1d" "V2v" "V2d" "V3v" "V3d" "hV4" "VO1" "VO2" "PHC1" "PHC2" "TO2" "TO1" "LO2" "LO1" "V3B" "V3A" "IPS0" "IPS1" "IPS2" "IPS3" "IPS4" "IPS5" "SPL1" "FEF")
+
+export SUBJECTS_DIR_LOCAL=/home/edadan/data/Project/MEG/Retinotopy/Data/Freesurfer_directory/Freesurfer_subjects
+export subjid=wlsubj058
+
+for i in {1..25}
+do
+ mri_cor2label --sd ${SUBJECTS_DIR_LOCAL} --i ${SUBJECTS_DIR_LOCAL}/${subjid}/surf/lh.wang15_mplbl.mgz --id ${i} --l lh.wang2015atlas.${roiname_array[${i}]}.label --surf ${subjid} lh inflated
+ mri_cor2label --sd ${SUBJECTS_DIR_LOCAL} --i ${SUBJECTS_DIR_LOCAL}/${subjid}/surf/rh.wang15_mplbl.mgz --id ${i} --l rh.wang2015atlas.${roiname_array[${i}]}.label --surf ${subjid} rh inflated
+done
+
