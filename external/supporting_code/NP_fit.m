@@ -1,6 +1,10 @@
 function [yfit] = NP_fit(x,y,w,xfit)
 % Do a linear regression of the two parameters weighted with the variance explained
 
+if ~exist('w','var') || isempty(w),
+  w = ones(size(x));
+end
+
 roi.p  = linreg(x,y,w);
 roi.p = flipud(roi.p(:)); % switch to polyval format
 

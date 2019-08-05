@@ -20,6 +20,7 @@ model_data_thr.posvol = model_data.posvol(thr_index);
 
 % difference of Gaussians parameters
 if strcmpi(opt.modelType,'DoGs')
+    model_data_thr.sigma2 = model_data.sigma2(thr_index);
     model_data_thr.DoGs_fwhmax = model_data.DoGs_fwhmax(thr_index);
     model_data_thr.DoGs_surroundSize = model_data.DoGs_surroundSize(thr_index);
     model_data_thr.DoGs_fwhmin_first = model_data.DoGs_fwhmin_first(thr_index);

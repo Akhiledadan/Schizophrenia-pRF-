@@ -10,18 +10,23 @@ function opt = getOpts(varargin)
 
 
 % --- GENERAL ---
-opt.verbose               = true;          % General
+opt.verbose               = false;          % General
 opt.doSaveData            = true;           % General
-opt.saveFig               = false;           % General
+opt.saveFig               = true;           % General
 opt.saveRes               = false;            % General
 
 % --- model parameters ---
 opt.modelType = 'DoGs';
-opt.varExpThr = 0.4;
+opt.varExpThr = 0.2;
 opt.eccThr = [1 9.21];
 opt.meanMapThr = 80;
 
 % --- plot types ---
-opt.plotType = 'Ecc_SurSize_DoGs';
+%opt.plotType = 'Ecc_Sig';
+%opt.plotType = 'Ecc_Sig_fwhm_DoGs';
+opt.plotType = 'Ecc_SurSiz_DoGs';
+
+% --- analysis types ---
+opt.analysis = 'subave_Ave';
 
 end

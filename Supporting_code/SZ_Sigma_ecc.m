@@ -10,7 +10,7 @@ function SZ_Sigma_ecc
 %       - save_plots : 1- save figures 0 - don't save
 % 31/10/2018: [A.E] wrote it
 
-%% 
+%%
 % Go to the root path where a simlink called data is created, containing
 % the data
 dirPth = loadPaths;
@@ -27,11 +27,7 @@ MarkerSize = 3;
 
 % Select the ROIs
 rois = {'V1';'V2';'V3'};
-
-% pRF parameters to be compared
-if ~exist('plotType','var') || isempty(plotType)
-    plotType = opt.plotType;
-end
+%rois = {'WangAtlas_V1v';'WangAtlas_V2v';'WangAtlas_V3v'};
 
 % Define the different conditions to be compared
 conditions = [{'ptwH+'};{'ptwH-'};{'HC'}];
@@ -44,12 +40,8 @@ dataType = 'Averages';
 numCond = length(conditions);
 
 % Make the directory to save results
-if opt.saveFig || opt.saveRes
-    cur_time = datestr(now);
-    cur_time(cur_time == ' ' | cur_time == ':' | cur_time == '-') = '_';
-    save_dir = fullfile(main_dir, ['/Results/Results' '_' cur_time '_' plotType]);
-    mkdir(save_dir);
-end
+cur_time = datestr(now);
+cur_time(cur_time == ' ' | cur_time == ':' | cur_time == '-') = '_';
 
 % Load types of model to compare
 model_file = cell(numCond,1);
@@ -64,14 +56,16 @@ for cond_idx = 1:numCond
     cur_cond = conditions{cond_idx};
     switch cur_cond
         case 'ptwH+'
-            % subjects = [{'100'},{'101'},{'102'},{'103'},{'104'},{'106'},{'107'},{'108'},{'109'},{'110'},{'111'},{'112'},{'114'}];
-            subjects = [{'100'}];
+%            subjects = [{'100'}];
+            subjects = [{'100','101','102','103','104','106','107','109','110','111','112','114'}];   
             
         case 'ptwH-'
-            subjects = [{'200'}];
+%            subjects = [{'200'}];
+            subjects = [{'200','201','202','203','204','205','206','207','208','209','210','211','212','218'}];
             
         case 'HC'
-            subjects = [{'301'}];
+%            subjects = [{'301'}];
+            subjects = [{'301','302','304','305','306','307','309','310','312','313','314','315','316'}];
     end
     
     for sub_idx = 1:length(subjects)
@@ -138,11 +132,14 @@ model_data_thr = cell(1);
 
 numSubjects = nan(numCond,1);
 for cond_idx = 1:numCond
+    fprintf('Loading model for condition %d \n',cond_idx);
     
     numSub = sum(~cellfun(@isempty,Cond_model.model_file(cond_idx,:)),2); % check if subjects field is empty
     numSubjects(cond_idx,1) = numSub;
     
     for sub_idx = 1:numSub
+        
+        fprintf('Loading model for subject %d \n',sub_idx);
         
         % Load coordinate file
         coordsFile = Cond_model.coords_file{cond_idx,sub_idx};
@@ -167,7 +164,7 @@ for cond_idx = 1:numCond
             model_data(cond_idx,sub_idx,roi_idx) = GetInfoModel(Cond_model.model_file{cond_idx,sub_idx},coordsFile,ROI_params.roi_fname{roi_idx,cond_idx,sub_idx});
             
             % Difference of gaussians parameters
-            rm = load(Cond_model.model_file{cond_idx});
+            rm = load(Cond_model.model_file{cond_idx,sub_idx});
             if strcmpi(opt.modelType,'DoGs')
                 [fwhmax,surroundSize,fwhmin_first, fwhmin_second, diffwhmin] = rmGetDoGFWHM(rm.model{1},{indices_mean});
                 model_data{cond_idx,sub_idx,roi_idx}.DoGs_fwhmax = fwhmax;
@@ -190,13 +187,8 @@ for cond_idx = 1:numCond
             
             % Store the thresholded pRF values in a table
             %add_t_1{sub_idx} = table(model_data_thr{cond_idx,sub_idx,roi_idx},'VariableNames',ROI_params.rois(roi_idx));
-            
-            
         end
-        
     end
-    
-    
 end
 
 % Update Cond_model with number of subjects for each conditions
@@ -235,55 +227,240 @@ Cond_model = [Cond_model add_t_rois];
 % ROI_params = [ROI_params add_t_1_roi];
 
 %%
-%Analysis = 'subave_Ave';
-Analysis = 'alltog';
 
-switch Analysis
-    case 'subave_Ave'
+%Analysis = 'alltog';
+
+% Basic exploratory analysis
+% Histogram distribution for individual subjects for individual conditions
+if opt.verbose
+    for roi_idx = 1:num_roi
+        roi_comp = ROI_params.rois{roi_idx};
+        for cond_idx = 1:numCond
+            cond_comp = Cond_model.conditions{cond_idx};
+            figPoint_exp1 = figure('visible','off');titleall = sprintf('%s %s', roi_comp,cond_comp); title(titleall); set(gcf,'Name', titleall);
+            
+            numSub = Cond_model.numSubjects(cond_idx);
+            cols = 2;
+            if rem(numSub,2)==0
+                rows = numSub/cols;
+            else
+                rows = (numSub+1)/cols;
+            end
+            
+            save_dir_exp = strcat(SZ_rootPath,'/data/plots/expAnalysis/');
+            if ~exist(save_dir_exp,'dir')
+                mkdir(save_dir_exp);
+            end
+            
+            % Sigma
+            figPoint_exp1 = figure('visible','off');titleall = sprintf('%s %s', roi_comp,cond_comp); title(titleall); set(gcf,'Name', titleall);
+            for sub_idx=1:numSub; subplot(rows,cols,sub_idx); hist(Cond_model{cond_idx,roi_comp}{1,sub_idx}.sigma); xlim([0 inf]); end
+            saveas(figPoint_exp1,fullfile(save_dir_exp,strcat(sprintf('%s',regexprep(titleall,' ','_')),'sigma','.png')));
+            
+            % full width half max of the positive gaussian 
+            figPoint_exp2 = figure('visible','off');titleall = sprintf('%s %s', roi_comp,cond_comp); title(titleall); set(gcf,'Name', titleall);
+            for sub_idx=1:numSub; subplot(rows,cols,sub_idx); hist(Cond_model{cond_idx,roi_comp}{1,sub_idx}.DoGs_fwhmax); xlim([0 inf]); end
+            saveas(figPoint_exp2,fullfile(save_dir_exp,strcat(sprintf('%s',regexprep(titleall,' ','_')),'fwhm','.png')));
+            
+            % surround size (distance between the negative peak of the surround)
+            figPoint_exp3 = figure('visible','off');titleall = sprintf('%s %s', roi_comp,cond_comp); title(titleall); set(gcf,'Name', titleall);
+            for sub_idx=1:numSub; subplot(rows,cols,sub_idx); hist(Cond_model{cond_idx,roi_comp}{1,sub_idx}.DoGs_surroundSize); xlim([0 inf]); end
+            saveas(figPoint_exp3,fullfile(save_dir_exp,strcat(sprintf('%s',regexprep(titleall,' ','_')),'SurSize','.png')));
+            
+            
+        end
         
+    end
+end
+
+%%
+
+switch opt.analysis
+    case 'subave_Ave'
+        % Average the prf parameter value from the subjects first and then
+        % Average the mean value from all the subjects
+                            % x range values for fitting
+        xfit_range = [opt.eccThr(1) opt.eccThr(2)];
+        xfit = linspace(xfit_range(1),xfit_range(2),8)';
         for roi_idx = 1:num_roi
             roi_comp = ROI_params.rois{roi_idx};
+            
             for cond_idx = 1:numCond
-                numSub = Cond_model.numSubjects(1);
+                numSub = Cond_model.numSubjects(cond_idx);
+                
                 for sub_idx = 1:numSub
-                    x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc;
-                    y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.sigma;
-                    ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp;
+                    xfit_all(cond_idx).val(:,sub_idx,roi_idx) = xfit;                    
                     
-                    x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc;
-                    y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.sigma;
-                    ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp;
+                    switch opt.plotType
+                        case 'Ecc_Sig'
+                            yAxis = 'sigma';
+                            yl = [0 6];
+                            
+                            if cond_idx==1
+                                idx_surSizeGr0_p1 = Cond_model{1,roi_comp}{1,sub_idx}.sigma ~= 0;
+                                x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p1);
+                                y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.sigma(idx_surSizeGr0_p1);
+                                ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p1);
+                                
+                                param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
+                                param_comp_1_yfit_all.val(:,sub_idx,roi_idx) = param_comp_1_yfit;
+                                
+                                % Bootstrap the data and bin the x parameter
+                                [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);                                      
+                                param_comp_1_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all.val(:,sub_idx,roi_idx) = param_comp_1_data.y;                               
+                                
+                            elseif cond_idx==2
+                                idx_surSizeGr0_p2 = Cond_model{2,roi_comp}{1,sub_idx}.sigma ~= 0;
+                                x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p2);
+                                y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.sigma(idx_surSizeGr0_p2);
+                                ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p2);
+                                
+                                param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
+                                param_comp_2_yfit_all.val(:,sub_idx,roi_idx) = param_comp_2_yfit;
+                                
+                                [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
+                                param_comp_2_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all.val(:,sub_idx,roi_idx) = param_comp_2_data.y;
+                                
+                            elseif cond_idx==3
+                                idx_surSizeGr0_p3 = Cond_model{3,roi_comp}{1,sub_idx}.sigma ~= 0;
+                                x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p3);
+                                y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.sigma(idx_surSizeGr0_p3);
+                                ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p3);
+                                
+                                param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
+                                param_comp_3_yfit_all.val(:,sub_idx,roi_idx) = param_comp_3_yfit;
+                                
+                                [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
+                                param_comp_3_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all.val(:,sub_idx,roi_idx) = param_comp_3_data.y;
+                            end
+                        case 'Ecc_Sig2'
+                            yAxis = 'sigma2';
+                            yl = [0 6];
+                            
+                            x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc;
+                            y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.sigma2;
+                            ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp;
+                            
+                            x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc;
+                            y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.sigma2;
+                            ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp;
+                            
+                            x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc;
+                            y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.sigma2;
+                            ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp;
+                            
+                        case 'Ecc_Sig_fwhm_DoGs'
+                            yAxis = 'DoGs fWHM';
+                            yl = [0 12];
+                            
+                            if cond_idx==1
+                                idx_surSizeGr0_p1 = Cond_model{1,roi_comp}{1,sub_idx}.DoGs_fwhmax ~= 0;
+                                x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p1);
+                                y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.DoGs_fwhmax(idx_surSizeGr0_p1);
+                                ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p1);
+                                
+                                param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
+                                param_comp_1_yfit_all.val(:,sub_idx,roi_idx) = param_comp_1_yfit;
+                                
+                                % Bootstrap the data and bin the x parameter
+                                [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);                                      
+                                param_comp_1_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all.val(:,sub_idx,roi_idx) = param_comp_1_data.y;                               
+                                
+                            elseif cond_idx==2
+                                idx_surSizeGr0_p2 = Cond_model{2,roi_comp}{1,sub_idx}.DoGs_fwhmax ~= 0;
+                                x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p2);
+                                y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.DoGs_fwhmax(idx_surSizeGr0_p2);
+                                ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p2);
+                                
+                                param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
+                                param_comp_2_yfit_all.val(:,sub_idx,roi_idx) = param_comp_2_yfit;
+                                
+                                [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
+                                param_comp_2_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all.val(:,sub_idx,roi_idx) = param_comp_2_data.y;
+                                
+                            elseif cond_idx==3
+                                idx_surSizeGr0_p3 = Cond_model{3,roi_comp}{1,sub_idx}.DoGs_fwhmax ~= 0;
+                                x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p3);
+                                y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.DoGs_fwhmax(idx_surSizeGr0_p3);
+                                ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p3);
+                                
+                                param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
+                                param_comp_3_yfit_all.val(:,sub_idx,roi_idx) = param_comp_3_yfit;
+                                
+                                [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
+                                param_comp_3_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all.val(:,sub_idx,roi_idx) = param_comp_3_data.y;
+                            end
+                            
+                            
+                        case 'Ecc_SurSiz_DoGs'
+                            yAxis = 'DoGs Surround size';
+                            yl = [0 40];
+                            
+                            if cond_idx==1
+                                idx_surSizeGr0_p1 = Cond_model{1,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
+                                x_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p1);
+                                y_param_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p1);
+                                ve_comp_1 = Cond_model{1,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p1);
+                                
+                                param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
+                                param_comp_1_yfit_all.val(:,sub_idx,roi_idx) = param_comp_1_yfit;
+                                
+                                % Bootstrap the data and bin the x parameter
+                                [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);                                      
+                                param_comp_1_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all.val(:,sub_idx,roi_idx) = param_comp_1_data.y;                               
+                                
+                            elseif cond_idx==2
+                                idx_surSizeGr0_p2 = Cond_model{2,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
+                                x_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p2);
+                                y_param_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p2);
+                                ve_comp_2 = Cond_model{2,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p2);
+                                
+                                param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
+                                param_comp_2_yfit_all.val(:,sub_idx,roi_idx) = param_comp_2_yfit;
+                                
+                                [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
+                                param_comp_2_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all.val(:,sub_idx,roi_idx) = param_comp_2_data.y;
+                                
+                            elseif cond_idx==3
+                                idx_surSizeGr0_p3 = Cond_model{3,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
+                                x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p3);
+                                y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p3);
+                                ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p3);
+                                
+                                param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
+                                param_comp_3_yfit_all.val(:,sub_idx,roi_idx) = param_comp_3_yfit;
+                                
+                                [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
+                                param_comp_3_b_xfit_all.val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all.val(:,sub_idx,roi_idx) = param_comp_3_data.y;
+                            end
+                    end
                     
-                    x_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.ecc;
-                    y_param_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.sigma;
-                    ve_comp_3 = Cond_model{3,roi_comp}{1,sub_idx}.varexp;
+                    
                     
                     % fit
                     % Axis limits for plotting
-                    xaxislim = [0 10.21];
-                    yaxislim = [0 6];
+%                     xaxislim = [0 10.21];
+%                     yaxislim = [0 6];
                     
-                    % x range values for fitting
-                    xfit_range = [opt.eccThr(1) opt.eccThr(2)];
-                    xfit = linspace(xfit_range(1),xfit_range(2),8)';
-                    param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
-                    param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
-                    param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
-                    
-                    
-                    xfit_all(cond_idx).val(:,sub_idx,roi_idx) = xfit;
-                    param_comp_1_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_yfit;
-                    param_comp_2_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_yfit;
-                    param_comp_3_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_yfit;
-                    
-                    % Bootstrap the data and bin the x parameter
-                    [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);
-                    [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
-                    [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
-                    
-                    param_comp_1_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.y;
-                    param_comp_2_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.y;
-                    param_comp_3_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.y;
+% 
+%                     param_comp_1_yfit = NP_fit(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit);
+%                     param_comp_2_yfit = NP_fit(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit);
+%                     param_comp_3_yfit = NP_fit(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit);
+%                     
+%                     
+%                     
+%                     param_comp_1_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_yfit;
+%                     param_comp_2_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_yfit;
+%                     param_comp_3_yfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_yfit;
+%                     
+%                     % Bootstrap the data and bin the x parameter
+%                     [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);
+%                     [param_comp_2_data,param_comp_2_b_xfit,param_comp_2_b_upper,param_comp_2_b_lower] = NP_bin_param(x_param_comp_2,y_param_comp_2,ve_comp_2,xfit_range);
+%                     [param_comp_3_data,param_comp_3_b_xfit,param_comp_3_b_upper,param_comp_3_b_lower] = NP_bin_param(x_param_comp_3,y_param_comp_3,ve_comp_3,xfit_range);
+%                     
+%                     param_comp_1_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.x'  ; param_comp_1_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_1_data.y;
+%                     param_comp_2_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.x'  ; param_comp_2_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_2_data.y;
+%                     param_comp_3_b_xfit_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.x'  ; param_comp_3_data_all(cond_idx).val(:,sub_idx,roi_idx) = param_comp_3_data.y;
                     
                 end
             end
@@ -291,62 +468,122 @@ switch Analysis
         
         for cond_idx = 1:numCond
             xfit_all_ave  = mean(xfit_all(cond_idx).val,2);
-            param_comp_1_yfit_all_ave = mean(param_comp_1_yfit_all(cond_idx).val,2);
-            param_comp_2_yfit_all_ave = mean(param_comp_2_yfit_all(cond_idx).val,2);
-            param_comp_3_yfit_all_ave = mean(param_comp_3_yfit_all(cond_idx).val,2);
+            param_comp_1_yfit_all_ave = mean(param_comp_1_yfit_all.val,2);
+            param_comp_2_yfit_all_ave = mean(param_comp_2_yfit_all.val,2);
+            param_comp_3_yfit_all_ave = mean(param_comp_3_yfit_all.val,2);
             
-            param_comp_1_b_xfit_all_ave = mean(param_comp_1_b_xfit_all(cond_idx).val,2);
-            param_comp_2_b_xfit_all_ave = mean(param_comp_2_b_xfit_all(cond_idx).val,2);
-            param_comp_3_b_xfit_all_ave = mean(param_comp_3_b_xfit_all(cond_idx).val,2);
+            param_comp_1_b_xfit_all_ave = mean(param_comp_1_b_xfit_all.val,2);
+            param_comp_2_b_xfit_all_ave = mean(param_comp_2_b_xfit_all.val,2);
+            param_comp_3_b_xfit_all_ave = mean(param_comp_3_b_xfit_all.val,2);
             
-            param_comp_1_b_data_all_ave = mean(param_comp_1_data_all(cond_idx).val,2);
-            param_comp_2_b_data_all_ave = mean(param_comp_2_data_all(cond_idx).val,2);
-            param_comp_3_b_data_all_ave = mean(param_comp_3_data_all(cond_idx).val,2);
+            param_comp_1_b_data_all_ave = mean(param_comp_1_data_all.val,2);
+            param_comp_1_b_data_all_std = std(param_comp_1_data_all.val,[],2);
+            param_comp_1_b_data_all_sem = param_comp_1_b_data_all_std./sqrt(size(param_comp_1_data_all.val,2));
+            
+            param_comp_2_b_data_all_ave = mean(param_comp_2_data_all.val,2);
+            param_comp_2_b_data_all_std = std(param_comp_2_data_all.val,[],2);
+            param_comp_2_b_data_all_sem = param_comp_2_b_data_all_std./sqrt(size(param_comp_2_data_all.val,2));            
+            
+            param_comp_3_b_data_all_ave = mean(param_comp_3_data_all.val,2);            
+            param_comp_3_b_data_all_std = std(param_comp_3_data_all.val,[],2);
+            param_comp_3_b_data_all_sem = param_comp_3_b_data_all_std./sqrt(size(param_comp_3_data_all.val,2));
             
         end
         
+        
         for roi_idx = 1:num_roi
-            for cond_idx = 1:numCond
-                % Plot the fit line
-                figPoint_fit = figure;
-                plot(xfit_all_ave(:,:,roi_idx),param_comp_1_yfit_all_ave(:,:,roi_idx)','b'); hold on;
-                plot(xfit_all_ave(:,:,roi_idx),param_comp_2_yfit_all_ave(:,:,roi_idx)','g');hold on;
-                plot(xfit_all_ave(:,:,roi_idx),param_comp_3_yfit_all_ave(:,:,roi_idx)','r');
+            roi_comp = ROI_params.rois{roi_idx};
+            
+            param_comp_1_b_data_all_ave_fit = NP_fit(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx),[],param_comp_1_b_xfit_all_ave(:,:,roi_idx));
+            param_comp_2_b_data_all_ave_fit = NP_fit(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx),[],param_comp_2_b_xfit_all_ave(:,:,roi_idx));
+            param_comp_3_b_data_all_ave_fit = NP_fit(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx),[],param_comp_3_b_xfit_all_ave(:,:,roi_idx));
+            
+            
+            % Plot the fit line
+            figName = sprintf('%s vs eccentricity',yAxis);
+            figPoint_fit = figure; set(gcf, 'Color', 'w', 'Position',[100 100 1920/2 1080/2], 'Name', figName); hold on;
+            
+            plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx)','.','color',[0.5 0.5 1],'MarkerSize',25); hold on;
+            plot(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx)','.','color',[0.5 1 0.5],'MarkerSize',25); hold on;
+            plot(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx)','.','color',[1 0.5 0.5],'MarkerSize',25);
+            hold on;
+            errorbar(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx)',param_comp_1_b_data_all_sem(:,:,roi_idx),'color',[0.5 0.5 1],'MarkerFaceColor','b','MarkerSize',25,'LineStyle','none');hold on;
+            errorbar(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx)',param_comp_2_b_data_all_sem(:,:,roi_idx),'color',[0.5 1 0.5],'MarkerFaceColor','b','MarkerSize',25,'LineStyle','none');
+            errorbar(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx)',param_comp_3_b_data_all_sem(:,:,roi_idx),'color',[1 0.5 0.5],'MarkerFaceColor','b','MarkerSize',25,'LineStyle','none');
+            
+            
+            titleall = sprintf('%s', roi_comp) ;
+            title(titleall);
+            xlabel('eccentricity');            
+            ylbl = sprintf('%s (degrees)',yAxis);
+            ylabel(ylbl);
+            ylim(yl);
+            
+            data_comp_1 = Cond_model{1,1}{1};
+            data_comp_2 = Cond_model{2,1}{1};
+            data_comp_3 = Cond_model{3,1}{1};
+            
+            hold on;
+            plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave_fit,'color','b','LineWidth',2); hold on;
+            plot(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave_fit,'color','g','LineWidth',2); hold on;
+            plot(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave_fit,'color','r','LineWidth',2);
+            legend([{data_comp_1},{data_comp_2},{data_comp_3}],'Location','northWest');
+            
+            %             hold on;
+            %             plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx)','b--'); hold on;
+            %             plot(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx)','g--');hold on;
+            %             plot(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx)','r--');
+            
+            %             hold on;
+            %             % Plot the confidence intervals as patch
+            %             patch([param_comp_1_b_xfit, fliplr(param_comp_1_b_xfit)], [param_comp_1_b_lower', fliplr(param_comp_1_b_upper')], [0.3010, 0.7450, 0.9330], 'FaceAlpha', 0.5, 'LineStyle','none');
+            %             patch([param_comp_2_b_xfit, fliplr(param_comp_2_b_xfit)], [param_comp_2_b_lower', fliplr(param_comp_2_b_upper')], [0.4 1 0.4], 'FaceAlpha', 0.5, 'LineStyle','none');
+            %             patch([param_comp_3_b_xfit, fliplr(param_comp_3_b_xfit)], [param_comp_3_b_lower', fliplr(param_comp_3_b_upper')], [1 0.4 0.4], 'FaceAlpha', 0.5, 'LineStyle','none');
+            %
+            
+            %         errorbar(param_comp_1_data.x,param_comp_1_data.y,param_comp_1_data.ysterr,'bo','MarkerFaceColor','b','MarkerSize',MarkerSize);
+            %         errorbar(param_comp_2_data.x,param_comp_2_data.y,param_comp_2_data.ysterr,'go','MarkerFaceColor','g','MarkerSize',MarkerSize);
+            %         errorbar(param_comp_2_data.x,param_comp_3_data.y,param_comp_3_data.ysterr,'ro','MarkerFaceColor','r','MarkerSize',MarkerSize);
+            %
+            %         titleall = sprintf('%s', roi_comp) ;
+            %         title(titleall);
+            %         legend([{data_comp_1},{data_comp_2},{data_comp_3}]);
+            %         ylim(yaxislim);
+            %         xlim(xaxislim);
+            
+            hold off;
+            
+            %% Save the plots and results
+            if opt.saveFig == 1
+                cur_dir = regexprep(yAxis,' ','_');
+                save_dir = fullfile(SZ_rootPath, [sprintf('data/plots/%s/',cur_dir) cur_time '_' opt.plotType '_']);
                 
-                %         hold on;
-                %         plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_upper_all_ave(:,:,roi_idx),'b--');
-                %         plot(param_comp_1_b_xfit,param_comp_1_b_lower,'b--');
-                %
-                %         plot(param_comp_2_b_xfit,param_comp_2_b_upper,'g--');
-                %         plot(param_comp_2_b_xfit,param_comp_2_b_lower,'g--');
-                %
-                %         plot(param_comp_3_b_xfit,param_comp_3_b_upper,'r--');
-                %         plot(param_comp_3_b_xfit,param_comp_3_b_lower,'r--')
+                if ~exist(save_dir,'dir')
+                    mkdir(save_dir);
+                end
                 
-                hold on;
-                plot(param_comp_1_b_xfit_all_ave(:,:,roi_idx),param_comp_1_b_data_all_ave(:,:,roi_idx)','b--'); hold on;
-                plot(param_comp_2_b_xfit_all_ave(:,:,roi_idx),param_comp_2_b_data_all_ave(:,:,roi_idx)','g--');hold on;
-                plot(param_comp_3_b_xfit_all_ave(:,:,roi_idx),param_comp_3_b_data_all_ave(:,:,roi_idx)','r--');
+                filename_fit = fullfile(save_dir,strcat(opt.plotType, roi_comp,'.png'));
+                saveas(figPoint_fit,filename_fit);
                 
-                
-                
-                
-                %         errorbar(param_comp_1_data.x,param_comp_1_data.y,param_comp_1_data.ysterr,'bo','MarkerFaceColor','b','MarkerSize',MarkerSize);
-                %         errorbar(param_comp_2_data.x,param_comp_2_data.y,param_comp_2_data.ysterr,'go','MarkerFaceColor','g','MarkerSize',MarkerSize);
-                %         errorbar(param_comp_2_data.x,param_comp_3_data.y,param_comp_3_data.ysterr,'ro','MarkerFaceColor','r','MarkerSize',MarkerSize);
-                %
-                %         titleall = sprintf('%s', roi_comp) ;
-                %         title(titleall);
-                %         legend([{data_comp_1},{data_comp_2},{data_comp_3}]);
-                %         ylim(yaxislim);
-                %         xlim(xaxislim);
-                
-                hold off;
-                
-                
-                
-            end
-        end       
+            end            
+            
+            
+        end
+        
+        if opt.saveRes == 1
+            % save the results            
+            cur_dir = regexprep(yAxis,' ','_');
+            save_dir = fullfile(SZ_rootPath, [sprintf('data/results/%s/',cur_dir) cur_time '_' opt.plotType]);
+            mkdir(save_dir);
+            
+            filename_fit = fullfile(save_dir,strcat(results.mat,'.mat'));
+            saveas(figPoint_fit,filename_fit);
+            save(save_dir,'Cond_model','ROI_params');
+            
+        end
+        
+        
+        
         
     case 'alltog'
         
@@ -417,7 +654,7 @@ switch Analysis
                     
                     % x range values for fitting
                     xfit_range = opt.eccThr;
-                
+                    
                 case 'Ecc_SurSize_DoGs'
                     x_param_comp_1 = [];
                     x_param_comp_2 = [];
@@ -434,26 +671,32 @@ switch Analysis
                     
                     num_sub_comp_1 = Cond_model.numSubjects(1);
                     for sub_idx= 1:num_sub_comp_1
-                        x_param_comp_1 = [x_param_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.ecc];
-                        y_param_comp_1 = [y_param_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.DoGs_surroundSize];
+                        idx_surSizeGr0_p1 = Cond_model{1,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
                         
-                        ve_comp_1 = [ve_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.varexp];
+                        x_param_comp_1 = [x_param_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p1)];
+                        y_param_comp_1 = [y_param_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p1)];
+                        
+                        ve_comp_1 = [ve_comp_1 Cond_model{1,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p1)];
                     end
                     
                     num_sub_comp_2 = Cond_model.numSubjects(2);
                     for sub_idx= 1:num_sub_comp_2
-                        x_param_comp_2 = [x_param_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.ecc];
-                        y_param_comp_2 = [y_param_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.DoGs_surroundSize];
+                        idx_surSizeGr0_p2 = Cond_model{2,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
                         
-                        ve_comp_2 = [ve_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.varexp];
+                        x_param_comp_2 = [x_param_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p2)];
+                        y_param_comp_2 = [y_param_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p2)];
+                        
+                        ve_comp_2 = [ve_comp_2 Cond_model{2,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p2)];
                     end
                     
                     num_sub_comp_3 = Cond_model.numSubjects(3);
                     for sub_idx= 1:num_sub_comp_3
-                        x_param_comp_3 = [x_param_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.ecc];
-                        y_param_comp_3 = [y_param_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.DoGs_surroundSize];
+                        idx_surSizeGr0_p3 = Cond_model{3,roi_comp}{1,sub_idx}.DoGs_surroundSize ~= 0;
                         
-                        ve_comp_3 = [ve_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.varexp];
+                        x_param_comp_3 = [x_param_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.ecc(idx_surSizeGr0_p3)];
+                        y_param_comp_3 = [y_param_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.DoGs_surroundSize(idx_surSizeGr0_p3)];
+                        
+                        ve_comp_3 = [ve_comp_3 Cond_model{3,roi_comp}{1,sub_idx}.varexp(idx_surSizeGr0_p3)];
                     end
                     
                     % Axis limits for plotting
@@ -497,20 +740,23 @@ switch Analysis
             %---------- plot Raw data----------------%
             
             fprintf('\n Plotting raw data for roi %d \n',roi_idx);
-            
-            figPoint_raw = figure;
-            plot(x_param_comp_1,y_param_comp_1,'b*');
-            hold on; plot(x_param_comp_2,y_param_comp_2,'g*');
-            hold on; plot(x_param_comp_3,y_param_comp_3,'r*');
+            figName = 'prf size vs eccentricity';
+            figPoint_raw = figure;set(gcf, 'Color', 'w', 'Position',[100 100 1920/2 1080/2], 'Name', figName);hold on;
+            plot(x_param_comp_1,y_param_comp_1,'.','color',[0.3010, 0.7450, 0.9330]);
+            hold on; plot(x_param_comp_2,y_param_comp_2,'.','color',[0.4 1 0.4]);
+            hold on; plot(x_param_comp_3,y_param_comp_3,'.','color',[1 0.4 0.4]);
             % figure attributes
             %titleName = strcat(Cond_model{1,1},'and',Cond_model{2,1});
             titleall = sprintf('%s', roi_comp) ;
             title(titleall);
-            legend([{data_comp_1},{data_comp_2},{data_comp_3}]);
+            %legend([{data_comp_1},{data_comp_2},{data_comp_3}]);
+            xlabel('eccentricity (degrees)');
+            ylabel('pRF size (degrees)');
+            
             ylim(yaxislim);
             xlim(xaxislim);
             
-            hold off;
+            %hold off;
             fprintf('\n Done \n');
             
             %%
@@ -528,12 +774,12 @@ switch Analysis
             
             
             % Plot the fit line
-            figPoint_fit = figure;
-            plot(xfit,param_comp_1_yfit','b'); hold on;
-            plot(xfit,param_comp_2_yfit','g');hold on;
-            plot(xfit,param_comp_3_yfit','r');
+            figPoint_fit = figure; set(gcf, 'Color', 'w', 'Position',[100 100 1920/2 1080/2], 'Name', figName);hold on;
+            plot(xfit,param_comp_1_yfit','b','LineWidth',3); hold on;
+            plot(xfit,param_comp_2_yfit','g','LineWidth',3);hold on;
+            plot(xfit,param_comp_3_yfit','r','LineWidth',3);
             
-            fprintf('Binning and bootstrapping the data for roi %d \n',roi_idx')
+            fprintf('Binning and bootstrapping the data for roi: %s \n',roi_comp)
             
             % Bootstrap the data and bin the x parameter
             [param_comp_1_data,param_comp_1_b_xfit,param_comp_1_b_upper,param_comp_1_b_lower] = NP_bin_param(x_param_comp_1,y_param_comp_1,ve_comp_1,xfit_range);
@@ -547,14 +793,19 @@ switch Analysis
             %     plot(param_comp_3_b_xfit,param_comp_3_data.y,'r');
             
             hold on;
-            plot(param_comp_1_b_xfit,param_comp_1_b_upper,'b--');
-            plot(param_comp_1_b_xfit,param_comp_1_b_lower,'b--');
-            
-            plot(param_comp_2_b_xfit,param_comp_2_b_upper,'g--');
-            plot(param_comp_2_b_xfit,param_comp_2_b_lower,'g--');
-            
-            plot(param_comp_3_b_xfit,param_comp_3_b_upper,'r--');
-            plot(param_comp_3_b_xfit,param_comp_3_b_lower,'r--');
+            % Plot the confidence intervals as patch
+            patch([param_comp_1_b_xfit, fliplr(param_comp_1_b_xfit)], [param_comp_1_b_lower', fliplr(param_comp_1_b_upper')], [0.3010, 0.7450, 0.9330], 'FaceAlpha', 0.5, 'LineStyle','none');
+            patch([param_comp_2_b_xfit, fliplr(param_comp_2_b_xfit)], [param_comp_2_b_lower', fliplr(param_comp_2_b_upper')], [0.4 1 0.4], 'FaceAlpha', 0.5, 'LineStyle','none');
+            patch([param_comp_3_b_xfit, fliplr(param_comp_3_b_xfit)], [param_comp_3_b_lower', fliplr(param_comp_3_b_upper')], [1 0.4 0.4], 'FaceAlpha', 0.5, 'LineStyle','none');
+            %
+            %             plot(param_comp_1_b_xfit,param_comp_1_b_upper,'b--');
+            %             plot(param_comp_1_b_xfit,param_comp_1_b_lower,'b--');
+            %
+            %             plot(param_comp_2_b_xfit,param_comp_2_b_upper,'g--');
+            %             plot(param_comp_2_b_xfit,param_comp_2_b_lower,'g--');
+            %
+            %             plot(param_comp_3_b_xfit,param_comp_3_b_upper,'r--');
+            %             plot(param_comp_3_b_xfit,param_comp_3_b_lower,'r--');
             
             hold on;
             errorbar(param_comp_1_data.x,param_comp_1_data.y,param_comp_1_data.ysterr,'bo','MarkerFaceColor','b','MarkerSize',MarkerSize);
@@ -567,7 +818,7 @@ switch Analysis
             ylim(yaxislim);
             xlim(xaxislim);
             
-            hold off;
+            %hold off;
             
             %%
             
