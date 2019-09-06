@@ -1,5 +1,5 @@
 function B=localfit(ii,x,y,ve)
-if isstruct(x) || isstruct(y) || istruct(ve) 
+if isstruct(x) || isstruct(y) || isstruct(ve) 
     x_b = []; y_b = []; ve_b = [];
     for idx = 1:length(ii)
         x_b = [x_b x(ii(idx)).data];

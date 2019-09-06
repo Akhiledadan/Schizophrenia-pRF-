@@ -1,4 +1,4 @@
-function [yfit] = NP_fit(x,y,w,xfit)
+function [yfit,roi] = NP_fit(x,y,w,xfit)
 % Do a linear regression of the two parameters weighted with the variance explained
 
 if ~exist('w','var') || isempty(w),
