@@ -14,6 +14,7 @@ opt.verbose               = true;          % General
 opt.doSaveData            = true;           % General
 opt.saveFig               = true;           % General
 opt.saveRes               = true;          % General
+opt.extractPrfParams      = false;
 
 % --- model parameters ---
 opt.modelType = '2DGaussian';
