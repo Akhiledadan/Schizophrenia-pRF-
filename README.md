@@ -9,7 +9,7 @@ parameters between 11 schizophrenia patients with hallucination, 14 schizophreni
 
 Used 6 metrics for the comparison - 
                                     
-                                    2D Gaussian model : full width half max of ,                                     
+                                    2D Gaussian model : full width half max                                   
                                     
                                     DoG model         : full width half max,
                                                         Surround size of DoG,
