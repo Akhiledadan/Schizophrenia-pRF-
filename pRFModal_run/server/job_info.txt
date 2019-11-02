@@ -1,7 +1,0 @@
-total time for 1 model to run = 2.5 hours
-
-memory allocated = 40000M
-
-Wed 12th june
-106 and 109 has to run again
-

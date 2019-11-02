@@ -1,3 +1,0 @@
-# Run difference of gaussians model on the server
-
-qsub /home/p266162/data/pRF_code/Schizophrenia-pRF-/server_analysis/SZ_run_model.sh 3 'SZ_DoGs' 'difference of gaussians'
