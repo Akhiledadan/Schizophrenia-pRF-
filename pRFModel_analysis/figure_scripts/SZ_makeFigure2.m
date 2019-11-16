@@ -14,9 +14,9 @@ for cond_idx = 1:numCond % for 3 conditions (ptH, ptNH, HC)
     fprintf('%s...',curCond);
     
     switch curCond
-        case 'SZ-VH'
+        case 'ptH'
             subjects = opt.subjects.ptH;
-        case 'SZ-nVH'
+        case 'ptNH'
             subjects = opt.subjects.ptNH;
         case 'HC'
             subjects = opt.subjects.HC;
@@ -45,7 +45,7 @@ for cond_idx = 1:numCond % for 3 conditions (ptH, ptNH, HC)
                 cur_vox = vox_idx_toPlot(vox_idx);
                 
                 fH1 = figure(1);clf;
-                set(gcf,'position',[407,103,1374,804],'Name',figName);
+                set(gcf,'position',[66,1,1855,1001],'Name',figName);
                 plot(time, data.timeSeries_rois_thr{cond_idx,sub_idx,roi_idx}.tSeries(:,cur_vox),'o--','color',[0 0 0],'LineWidth',4,'markerSize',7);
                 hold on;                
                 
@@ -64,13 +64,13 @@ for cond_idx = 1:numCond % for 3 conditions (ptH, ptNH, HC)
                 coords_cond           = data.timeSeries_rois_thr{cond_idx,sub_idx,roi_idx}.params.roi.coords(:,cur_vox); 
                 %---------------------
                 
-                txt_inPlot = sprintf('coords: [%d,%d,%d] \n %s    x: %f, y: %f \n       ve : %f, sigma: %f, beta: %f',coords_cond(1),coords_cond(2),coords_cond(3), curCond, x_cond,y_cond,ve_cond,s_cond,b_cond );
+                txt_inPlot = sprintf('coords: [%d,%d,%d] \n %s    x: %.2f, y: %.2f \n       ve : %.2f, sigma: %.2f, beta: %.2f',coords_cond(1),coords_cond(2),coords_cond(3), curCond, x_cond,y_cond,ve_cond,s_cond,b_cond );
                 
                 text(0.2,0.2,txt_inPlot,'Color',[0.2 0.2 0.2],'FontSize',15,'Units','normalized');
                 
                 xlabel('time (sec)');
                 ylabel('% BOLD response');
-                set(gca,'FontSize',15,'TickDir','out','LineWidth',3); box off;
+                set(gca,'FontUnits','centimeters','FontSize',1.1,'TickDir','out','LineWidth',3); box off;
                 
                 if opt.saveFigTseries
                     saveDir = fullfile(dirPth.saveDirMSFig,'figure2',sprintf('figure2_%s_%s',curSub,opt.plotType));
@@ -81,7 +81,7 @@ for cond_idx = 1:numCond % for 3 conditions (ptH, ptNH, HC)
                     figName(regexp(figName,' ')) = '_';
                     filename                     = figName;
                     fullFilename                 = sprintf([filename,'_ts_%s_%d'],curSub,vox_idx_toPlot(vox_idx));
-                    print(fH1, fullfile(saveDir,fullFilename), '-dpng');
+                    print(fH1, fullfile(saveDir,fullFilename), '-depsc2');
                 end
             end
         end 

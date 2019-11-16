@@ -5,7 +5,7 @@ clear all; close all;
 % 1. sigma vs eccentricity
 modelType = '2DGaussian';
 plotType = 'Ecc_Sig';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',1,'detailedPlot',0','getTimeSeries',0,'recomputeTimeSeries',0);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',0,'getPredictedResponse',0,'recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 close all;
 
@@ -15,14 +15,14 @@ close all;
 clear all; close all;
 modelType = 'DoGs';
 plotType = 'Ecc_Sig_fwhm_DoGs';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',1,'getTimeSeries',0,'recomputeTimeSeries',0);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',0,'getPredictedResponse',0,'recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 
 % 3. surround size vs eccentricity (DoGs)
 clear all; close all;
 modelType = 'DoGs';
 plotType = 'Ecc_SurSize_DoGs';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',1,'getTimeSeries',0,'recomputeTimeSeries',0);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',0,'recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 close all;
 
@@ -31,7 +31,7 @@ close all;
 clear all; close all;
 modelType = 'DoGs';
 plotType = 'Ecc_Sig2_DoGs';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',1,'getTimeSeries',0,'recomputeTimeSeries',0);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',0,'recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 close all;
 
@@ -41,7 +41,7 @@ close all;
 clear all; close all;
 modelType = 'DoGs';
 plotType = 'Ecc_Sig1_DoGs';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'getTimeSeries',0,'detailedPlot',0','recomputeTimeSeries',0,'sig2Lim',1);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'getTimeSeries',0,'detailedPlot',0','recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 close all;
 

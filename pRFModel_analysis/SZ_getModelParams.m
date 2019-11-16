@@ -30,9 +30,9 @@ for cond_idx = 1:numCond
     
     cur_cond = conditions{cond_idx};
     switch cur_cond
-        case 'SZ-VH'           
+        case 'ptH'           
             subjects = opt.subjects.ptH;            
-        case 'SZ-nVH'            
+        case 'ptNH'            
             subjects = opt.subjects.ptNH;            
         case 'HC'           
             subjects = opt.subjects.HC;    

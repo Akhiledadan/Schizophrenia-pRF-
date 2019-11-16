@@ -1,6 +1,6 @@
 function opt = SZ_getOpts(varargin)
-% Function to get struct with default analysis pipeline options for MEG
-% Retinotopy project. In case you want to change the default, use following
+% Function to get struct with default analysis pipeline options for pRFModel_schizophrenia
+% project. In case you want to change the default, use following
 % example:
 %
 % Example 1:
@@ -34,9 +34,9 @@ opt.subjectsToExclude.ptH  = [];
 opt.subjectsToExclude.ptNH = [];
 opt.subjectsToExclude.HC   = [{'304','305','314'}]; % determined by r
 
-% opt.subjectsToExclude.ptH        = [{'100','101','102','103','104','106','109','110','111','112','114'}];
-% opt.subjectsToExclude.ptNH       = [{'200','201','202','203','204','205','206','207','208','209','210','211','212','218'}];
-% opt.subjectsToExclude.HC         = [{'301','304','305','306','307','309','310','312','313','314','315','316'}]; % determined by r
+% opt.subjectsToExclude.ptH        = [{'101','102','103','104','106','109','110','111','112','114'}];
+% opt.subjectsToExclude.ptNH       = [{'201','202','203','204','205','206','207','208','209','210','211','212','218'}];
+% opt.subjectsToExclude.HC         = [{'304','305','306','307','309','310','312','313','314','315','316'}]; % determined by r
 
 
 opt.subjects.ptHAll        = [{'100','101','102','103','104','106','109','110','111','112','114'}];
@@ -50,11 +50,11 @@ opt.subjects.HC         = setdiff(opt.subjects.HCAll,opt.subjectsToExclude.HC);
 
 % Select the ROIs
 %opt.rois = {'V1';'V2';'V3'};
-opt.rois = {'V1';'V2';'V3';'WangAtlas_hV4'};
+opt.rois = {'V1';'V2';'V3';'V4'};
 %rois = {'WangAtlas_V1v';'WangAtlas_V2v';'WangAtlas_V3v'};
 
 % Define the different conditions to be compared
-opt.conditions = [{'SZ-VH'};{'SZ-nVH'};{'HC'}];
+opt.conditions = [{'ptH'};{'ptNH'};{'HC'}];
 
 opt.dataType = 'Averages';
 

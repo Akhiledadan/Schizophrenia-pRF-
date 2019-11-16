@@ -54,9 +54,9 @@ if opt.getTimeSeries
             
             % pRF model 
             if strcmpi(opt.modelType,'DoGs')
-                model_fname =  dir(fullfile(dirPth.modelPth,'SZ_DoGs-fFit.mat'));
+                model_fname =  dir(fullfile(dirPth.modelPth,opt.modelDoG));
             elseif strcmpi(opt.modelType,'2DGaussian')
-                model_fname =  dir(fullfile(dirPth.modelPth,'SZ_1G-fFit.mat'));
+                model_fname =  dir(fullfile(dirPth.modelPth,opt.model2DG));
             end
             
             if length(model_fname)>1

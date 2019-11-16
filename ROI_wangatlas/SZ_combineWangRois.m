@@ -1,5 +1,6 @@
-function combineMultipleRois
-% Function to combine multiple ROIs in mrVista (.mat) space 
+function SZ_combineWangRois
+% Function to combine multiple ROIs in mrVista (.mat) space to generate V1,
+% V2, V3 and hV4 used in the analysis
 % roisToCombine - name of the combined roi
 % rois          - rois in the anatomy/ROIs folder inside the mrSession folder
 % 
@@ -9,22 +10,13 @@ function combineMultipleRois
 subjects = {'100','101','102','103','104','106','109','110','111','112','114',...
             '200','201','202','203','204','205','206','207','208','209','210','211','212','218'...
             '301','302','304','305','306','307','309','310','312','313','314','315','316'};
+
 % subjects = {'100'};
-        
-        
+
+
 dirPth = SZ_loadPaths;
-
-combine_type = 'combine_roi';
-if strcmpi(combine_type,'rename_roi')
-    roisToCombine = {'V4'};
-    rois = [{'WangAtlas_hV4'}];
-    
-elseif strcmpi(combine_type,'combine_roi')
-    roisToCombine = {'V1234'};
-    rois = {'V1','V2','V3','V4'};
-    
-end
-
+roisToCombine = {'V1','V2','V3','V4'};
+rois = [{'WangAtlas_V1v'};{'WangAtlas_V1d'};{'WangAtlas_V2v'};{'WangAtlas_V2d'};{'WangAtlas_V3v'};{'WangAtlas_V3d'};{'WangAtlas_hV4'}];
 
 for sub_idx = 1:length(subjects)
     dirPth.sub_sess_path = fullfile(dirPth.mrvDirPth,'/',subjects{sub_idx},'/');
@@ -38,9 +30,9 @@ for sub_idx = 1:length(subjects)
     for rc = 1:length(roisToCombine)
         match = contains(rois,roisToCombine{rc});
         
-        %matchIdx = find(match);
+        matchIdx = find(match);
         
-        matchIdx = 1:length(rois);
+        %matchIdx = 1:length(rois);
         tmpData = [];
         for ii = 1:length(matchIdx)
             load(fullfile(dirPth.roi_path, rois{matchIdx(ii)}));

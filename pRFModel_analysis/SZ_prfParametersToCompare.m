@@ -11,9 +11,9 @@ for cond_idx = 1:numCond % for 3 conditions (ptH, ptNH, HC)
     fprintf('%s...',curCond);
     
     switch curCond
-        case 'SZ-VH'
+        case 'ptH'
             subjects = opt.subjects.ptH;
-        case 'SZ-nVH'
+        case 'ptNH'
             subjects = opt.subjects.ptNH;
         case 'HC'
             subjects = opt.subjects.HC;

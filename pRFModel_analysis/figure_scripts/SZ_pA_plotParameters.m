@@ -27,9 +27,9 @@ for cond_idx = 1:numCond
     
     curCond = conditions{cond_idx};
     switch curCond
-        case 'SZ-VH'
+        case 'ptH'
             subjects = opt.subjects.ptH;
-        case 'SZ-nVH'
+        case 'ptNH'
             subjects = opt.subjects.ptNH;
         case 'HC'
             subjects = opt.subjects.HC;
@@ -83,9 +83,9 @@ if opt.detailedPlot
             
             curCond = conditions{cond_idx};
             switch curCond
-                case 'SZ-VH'
+                case 'ptH'
                     subjects = opt.subjects.ptH;
-                case 'SZ-nVH'
+                case 'ptNH'
                     subjects = opt.subjects.ptNH;
                 case 'HC'
                     subjects = opt.subjects.HC;

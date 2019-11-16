@@ -53,7 +53,7 @@ for cond_idx = 1:numCond
             
             params    = data.timeSeries_rois{cond_idx,sub_idx,roi_idx}.params;
             model     = modelData.modelInfo{cond_idx,sub_idx,roi_idx};
-            pred      = SZ_computePredictedResponse(params,model); % prediction = (stim*pRFModel)xBeta
+            pred      = SZ_computePredictedResponse(params,model,opt); % prediction = (stim*pRFModel)xBeta
             
             data.predictions_rois{cond_idx,sub_idx,roi_idx} = pred;
             data.predictions_rois_thr{cond_idx,sub_idx,roi_idx} = data.predictions_rois{cond_idx,sub_idx,roi_idx}(roiThrIdx,:);
