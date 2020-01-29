@@ -6,7 +6,7 @@ function SZ_repeatedMeasuresAnova(params,opt,stats_folder,verbose)
 
 % folder containing results
 if ~exist('stats_folder','var')
-    stats_folder = '/mnt/storage_2/projects/SZ/data/results/stats';
+    stats_folder = '/mnt/storage_2/projects/Schizophrenia/data/results/stats';
 end
 
 if ~exist('verbose','var')

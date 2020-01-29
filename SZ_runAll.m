@@ -5,7 +5,7 @@ clear all; close all;
 % 1. sigma vs eccentricity
 modelType = '2DGaussian';
 plotType = 'Ecc_Sig';
-opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',0,'getPredictedResponse',0,'recomputeTimeSeries',0);
+opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'extractPrfParams',0,'detailedPlot',0,'getTimeSeries',1,'getPredictedResponse',1,'recomputeTimeSeries',0);
 SZ_pRFAnalysis(opt);
 close all;
 

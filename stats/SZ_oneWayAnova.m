@@ -3,7 +3,7 @@ function SZ_oneWayAnova(params,opt,stats_folder,verbose)
 % folder containing results
 
 if ~exist('stats_folder','var')
-    stats_folder = '/mnt/storage_2/projects/SZ/data/results/stats';
+    stats_folder = '/mnt/storage_2/projects/Schizophrenia/data/results/stats';
 end
 
 if ~exist('verbose','var')
@@ -59,15 +59,24 @@ if strcmp(opt.compare,'patientsOnly')
     V3 = [D(1,get(1:14),3),D(2,get(15:28),3)];
     V4 = [D(1,get(1:14),4),D(2,get(15:28),4)];
     
-else
+elseif strcmp(opt.compare,'patientsTogether')
     
-% %    get = ~isnan([D(1,:,1),D(2,:,1),D(3,:,1)]);
-%     get = ([D(1,:,1),D(2,:,1),D(3,:,1)]);
-%     % separate paremeter values into different rois
-%     V1 = [D(1,get(1:14),1)',D(2,get(15:28),1)',D(3,get(29:42),1)'];
-%     V2 = [D(1,get(1:14),2),D(2,get(15:28),2),D(3,get(29:42),2)];
-%     V3 = [D(1,get(1:14),3),D(2,get(15:28),3),D(3,get(29:42),3)];
-%     V4 = [D(1,get(1:14),4),D(2,get(15:28),4),D(3,get(29:42),4)];
+    V1 = 
+    
+    V1 = [V1_pt,D(3,:,1)'];
+    V2 = [D(1,:,2)',D(2,:,2)',D(3,:,2)'];
+    V3 = [D(1,:,3)',D(2,:,3)',D(3,:,3)'];
+    V4 = [D(1,:,4)',D(2,:,4)',D(3,:,4)'];
+    
+elseif strcmp(opt.compare,'patientsSeparate')
+    
+    % %    get = ~isnan([D(1,:,1),D(2,:,1),D(3,:,1)]);
+    %     get = ([D(1,:,1),D(2,:,1),D(3,:,1)]);
+    %     % separate paremeter values into different rois
+    %     V1 = [D(1,get(1:14),1)',D(2,get(15:28),1)',D(3,get(29:42),1)'];
+    %     V2 = [D(1,get(1:14),2),D(2,get(15:28),2),D(3,get(29:42),2)];
+    %     V3 = [D(1,get(1:14),3),D(2,get(15:28),3),D(3,get(29:42),3)];
+    %     V4 = [D(1,get(1:14),4),D(2,get(15:28),4),D(3,get(29:42),4)];
     
     % separate paremeter values into different rois
     V1 = [D(1,:,1)',D(2,:,1)',D(3,:,1)'];

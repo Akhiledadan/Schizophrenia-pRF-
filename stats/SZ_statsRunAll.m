@@ -1,6 +1,6 @@
 clear all;
-%opt.compare = 'patientsTogether';
-opt.compare = 'patientsSeparate';
+opt.compare = 'patientsTogether';
+%opt.compare = 'patientsSeparate';
 %opt.compare = 'patientsOnly';
 
 opt.roisToCompare = 'V1234';
@@ -15,12 +15,15 @@ modelType = '2DGaussian';
 plotType = 'Ecc_Sig';
 opt = SZ_getOpts('modelType',modelType,'plotType',plotType,'verbose',1,'compare',opt.compare,'roisToCompare',opt.roisToCompare,'paramToCompare',opt.paramToCompare);
 fprintf('%s',curParam)
+
+
+
 % SZ_repeatedMeasuresAnova(curParam,opt);
 % SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt);
-
+% SZ_oneWayAnova(curParam,opt);
+SZ_NWayAnova(curParam,opt);
 
 %%
 curParam = 'FWHM';
@@ -32,8 +35,8 @@ fprintf('%s',curParam)
 % SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt);
-
+% SZ_oneWayAnova(curParam,opt);
+SZ_NWayAnova(curParam,opt);
  
 %%
 curParam = 'surroundSize';
@@ -49,8 +52,8 @@ fprintf('%s',curParam)
 % SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt); 
- 
+% SZ_oneWayAnova(curParam,opt); 
+ SZ_NWayAnova(curParam,opt);
  
 %%
 
@@ -63,7 +66,8 @@ fprintf('%s',curParam)
 % SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt); 
+% SZ_oneWayAnova(curParam,opt); 
+ SZ_NWayAnova(curParam,opt);
  
 %%
 
@@ -76,7 +80,8 @@ fprintf('%s',curParam)
 % SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt);
+% SZ_oneWayAnova(curParam,opt);
+SZ_NWayAnova(curParam,opt);
 
 %%
 curParam = 'sigma2';
@@ -88,8 +93,8 @@ fprintf('%s',curParam)
 %  SZ_unpairedTtest(curParam,opt);
 
 % ANOVA for every ROI separately
- SZ_oneWayAnova(curParam,opt);
- 
+% SZ_oneWayAnova(curParam,opt);
+ SZ_NWayAnova(curParam,opt);
  
 
 
