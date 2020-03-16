@@ -17,3 +17,13 @@ Used 6 metrics for the comparison -
                                                         Suppression index,
                                                         Sigma of positive gaussian,
                                                         Sigma of negative gaussian.
+
+To run the code:
+
+1) Run the models (1 D Gaussian and DOG) using SZ_mrV.m function from vistaSession/<subject number> folder.
+
+2) Use SZ_runAll.m script for analyzing the model parameters and creating the figures 
+shown in the manuscript. 
+
+3) Use SZ_statsRunAll.m function for running the statistical analysis.   
+
